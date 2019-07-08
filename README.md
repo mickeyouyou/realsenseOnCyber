@@ -21,18 +21,17 @@ The following instructions support Cyber , on **Ubuntu 18.04**.
 > 2. use `rs-enumerate-devices` debug tool ensure the mounted device.
 
 
-Start this driver by:
+Start driver by:
 ```bash 
-mainborad -d dag/realsense.dag
-```
-
-or 
-
-```bash 
-cyber_launch start launch/realsense.launch
+bash realsense.sh
 ```
 
 Check published data by `cyber_monitor`.
+
+Stop:
+```bash
+bashh realsense.sh
+```
 
 ## T265 API
 https://github.com/IntelRealSense/librealsense/blob/master/doc/t265.md
