@@ -30,7 +30,7 @@ Check published data by `cyber_monitor`.
 
 Stop:
 ```bash
-bashh realsense.sh
+bash realsense.sh stop
 ```
 
 ## T265 API
