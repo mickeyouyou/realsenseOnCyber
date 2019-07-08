@@ -5,6 +5,35 @@ These are packages for using Intel RealSense cameras (D400 series SR300 camera a
 
 The following instructions support Cyber , on **Ubuntu 18.04**.
 
+
+## Channels
+
+```bash
+/realsense/pose
+/realsense/raw_image 
+/realsense/acc
+/realsense/gyro
+```
+
+## Start
+
+> 1. Please ensure installed Cyber envonroment, you can echo cyber ip like:`echo ${CYBER_IP}` to check.
+> 2. use `rs-enumerate-devices` debug tool ensure the mounted device.
+
+
+Start this driver by:
+```bash 
+mainborad -d dag/realsense.dag
+```
+
+or 
+
+```bash 
+cyber_launch start launch/realsense.launch
+```
+
+Check published data by `cyber_monitor`.
+
 ## T265 API
 https://github.com/IntelRealSense/librealsense/blob/master/doc/t265.md
 
