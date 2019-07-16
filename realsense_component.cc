@@ -3,12 +3,13 @@
 #include <chrono>
 #include <iomanip>
 #include <iostream>
-#include <librealsense2/rs.hpp>
 #include <mutex>
-#include <opencv2/calib3d.hpp>
-#include <opencv2/opencv.hpp>
 #include <thread>
 #include <utility>
+
+#include "librealsense2/rs.hpp"
+#include "opencv2/calib3d.hpp"
+#include "opencv2/opencv.hpp"
 
 #include "cyber/common/log.h"
 #include "cyber/cyber.h"
@@ -85,10 +86,7 @@ bool RealsenseComponent::Init() {
  * @return [description]
  */
 void RealsenseComponent::run() {
-  int times = 1;
   while (!cyber::IsShutdown()) {
-    std::cout << times << std::endl;
-    // TODO(fengzongbao) VERIFY
     // wait for device is ready. in case of device is busy
     if (!device_) {
       device_ = get_device();
@@ -131,8 +129,6 @@ void RealsenseComponent::run() {
       cv::remap(image, dst, map1_, map2_, cv::INTER_LINEAR);
       OnImage(dst, fisheye_frame.get_frame_number());
     }
-    times++;
-    // cyber::SleepFor(std::chrono::milliseconds(spin_rate_));
   }
 }
 

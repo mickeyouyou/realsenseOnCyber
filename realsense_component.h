@@ -1,9 +1,10 @@
 #pragma once
 
-#include <librealsense2/rs.hpp>
 #include <memory>
-#include <opencv2/opencv.hpp>
 #include <string>
+#include "opencv2/opencv.hpp"
+#include "librealsense2/rs.hpp"
+
 #include "cyber/class_loader/class_loader.h"
 #include "cyber/component/component.h"
 #include "modules/sensors/proto/sensors.pb.h"
