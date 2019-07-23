@@ -67,7 +67,8 @@ bool RealsenseComponent::Init() {
   Calibration();
 
   pose_writer_ = node_->CreateWriter<Pose>("/realsense/pose");
-  image_writer_ = node_->CreateWriter<Image>("/realsense/raw_image");
+  image_left_writer_ = node_->CreateWriter<Image>("/realsense/left_image");
+  image_right_writer_ = node_->CreateWriter<Image>("/realsense/right_image");
   acc_writer_ = node_->CreateWriter<Acc>("/realsense/acc");
   gyro_writer_ = node_->CreateWriter<Gyro>("/realsense/gyro");
 
@@ -75,7 +76,6 @@ bool RealsenseComponent::Init() {
     q_.enqueue(std::move(f));  // enqueue any new frames into q
   });
 
-  // async_result_ = cyber::Async(&RealsenseComponent::run, this);
   async_result_ =
       std::async(std::launch::async, &RealsenseComponent::run, this);
   return true;
@@ -127,7 +127,21 @@ void RealsenseComponent::run() {
           CV_8U, (void*)fisheye_frame.get_data(), cv::Mat::AUTO_STEP);
       cv::Mat dst;
       cv::remap(image, dst, map1_, map2_, cv::INTER_LINEAR);
-      OnImage(dst, fisheye_frame.get_frame_number());
+      OnImage(dst, fisheye_frame.get_frame_number(), f.get_profile().stream_index());
+    } else if (f.get_profile().stream_type() == RS2_STREAM_FISHEYE &&
+               f.get_profile().stream_index() == 2) {
+      // right fisheye
+      auto fisheye_frame = f.as<rs2::video_frame>();
+
+      AINFO << "fisheye " << f.get_profile().stream_index() << ", "
+            << fisheye_frame.get_width() << "x" << fisheye_frame.get_height();
+
+      cv::Mat image(
+          cv::Size(fisheye_frame.get_width(), fisheye_frame.get_height()),
+          CV_8U, (void*)fisheye_frame.get_data(), cv::Mat::AUTO_STEP);
+      cv::Mat dst;
+      cv::remap(image, dst, map1_, map2_, cv::INTER_LINEAR);
+      OnImage(dst, fisheye_frame.get_frame_number(), f.get_profile().stream_index());
     }
   }
 }
@@ -161,14 +175,18 @@ void RealsenseComponent::Calibration() {
  * @return true
  * @return false
  */
-void RealsenseComponent::OnImage(cv::Mat dst, uint64 frame_no) {
+void RealsenseComponent::OnImage(cv::Mat dst, uint64 frame_no, int stream_index) {
   auto image_proto = std::make_shared<Image>();
   image_proto->set_frame_no(frame_no);
   image_proto->set_encoding(rs2_format_to_string(RS2_FORMAT_Y8));
   image_proto->set_measurement_time(Time::Now().ToSecond());
   auto m_size = dst.rows * dst.cols * dst.elemSize();
   image_proto->set_data(dst.data, m_size);
-  image_writer_->Write(image_proto);
+  if(stream_index == 1) {
+    image_left_writer_->Write(image_proto);
+  } else {
+    image_right_writer_->Write(image_proto);
+  }
 }
 
 /**
@@ -195,15 +213,15 @@ void RealsenseComponent::OnPose(rs2_pose pose_data, uint64 frame_no) {
   rotation->set_x(pose_data.rotation.x);
   rotation->set_y(pose_data.rotation.y);
   rotation->set_z(pose_data.rotation.z);
+  rotation->set_w(pose_data.rotation.w);
 
   auto angular_velocity = pose_proto->mutable_angular_velocity();
   angular_velocity->set_x(pose_data.angular_velocity.x);
   angular_velocity->set_y(pose_data.angular_velocity.y);
   angular_velocity->set_z(pose_data.angular_velocity.z);
 
-  // pose_proto->set_angular_accelaration(pose_data.angular_acceleration);
-  // pose_proto->set_trancker_confidence(pose_data.tracker_confidence);
-  // pose_proto->set_mapper_confidence(pose_data.mapper_confidence);
+  pose_proto->set_trancker_confidence(pose_data.tracker_confidence);
+  pose_proto->set_mapper_confidence(pose_data.mapper_confidence);
 
   pose_writer_->Write(pose_proto);
 }
