@@ -18,7 +18,8 @@ Install by readme by https://github.com/mickeyouyou/apollo_lite
 
 ```bash
 /realsense/pose
-/realsense/raw_image 
+/realsense/left_image
+/realsense/right_image 
 /realsense/acc
 /realsense/gyro
 ```
